@@ -16,35 +16,41 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./data/haberbotu.db"
 
     # --- Uygulama / oturum ---
-    SECRET_KEY: str = "CHANGE_ME_IN_PRODUCTION"
+    SECRET_KEY: str = "f36aa1813d011ccde3082818d2f1e4dad0dc0d23bcfffe83fe3946c0bd0519bd"
     APP_TIMEZONE: str = "Europe/Istanbul"
     APP_BRAND_NAME: str = "NewsLetter"
-    APP_BASE_URL: str = "https://newsletter-phqk.onrender.com"
-    TRIAL_DAYS: int = 14
+    APP_BASE_URL: str = "https://newsletter.social"
+    TRIAL_DAYS: int = 7
 
     # --- Shopier (ödeme) ---
-    # PAT sisteminde otomatik ödeme linki oluşturmanın doğrulanmış bir REST
-    # API dokümantasyonu bulunamadığı için (bkz. sohbet), şu anki akış:
-    # panelde manuel oluşturduğunuz sabit ürün linklerine yönlendirme +
-    # sizin (platform sahibi) manuel plan onayı. SHOPIER_API_KEY/SECRET
-    # alanları ileride otomatik entegrasyon netleşirse kullanılmak üzere
-    # dursun; şu an aktif akışta kullanılmıyor.
     SHOPIER_API_KEY: str = ""
     SHOPIER_API_SECRET: str = ""
+    SHOPIER_PAT: str = (
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJkNjQ5YThiYTM0OTc4NzU2YjhlMDk2MjUxMTU0MGNhNiIsImp0aSI6"
+        "IjAxNjA4OWRiMTQ3MDRmZWE5ZGFkNjc5MTJiOTk1YjQ3NWRhMzQwY2IwM2YxNWRkZDQ3NTM0NTBjOGRhMTM2MjU3YzEyMjFmOGY3"
+        "NWE1ODI0YTc4NGM5NzI5NjM4ZWM2MDYyOGEzZGEyY2VlYTVlM2Y0YTVhZWE0MmZhMDdjNGNiOTNhYzMwYjM0OWRjNDZmMGJjNGVi"
+        "Nzc0NTIyMzAxZTMiLCJpYXQiOjE3ODU0MDAwOTUsIm5iZiI6MTc4NTQwMDA5NSwiZXhwIjoxOTQzMTg0ODU1LCJzdWIiOjI1MjM0"
+        "NzMsInNjb3BlcyI6WyJvcmRlcnM6cmVhZCIsIm9yZGVyczp3cml0ZSIsInByb2R1Y3RzOnJlYWQiLCJwcm9kdWN0czp3cml0ZSIs"
+        "InNoaXBwaW5nczpyZWFkIiwic2hpcHBpbmdzOndyaXRlIiwiZGlzY291bnRzOnJlYWQiLCJkaXNjb3VudHM6d3JpdGUiLCJwYXlv"
+        "dXRzOnJlYWQiLCJyZWZ1bmRzOnJlYWQiLCJyZWZ1bmRzOndyaXRlIiwic2hvcDpyZWFkIiwic2hvcDp3cml0ZSJdfQ.U3zL2Kn_G"
+        "fUNnX4cuf79nei7Jv4iVyZrrjojz80LFinvOYPN4x8C6Yc6eU7nc3q_ljpvgfGRHUuaAzU_2kXEuVIoAw7JTJRLRV_XjMTYXPjG"
+        "_KgbH5IMXAJRzJVzyUV3vWSZmzfWVgUCbudjRP4P-HkjxpTnaHJYwWyWhyAyZG4G_uVHFQlH7Na6XL4a4coi_3YiFyFYhKM0S8uH0"
+        "I7VdIUXcz7pUKjER6lx_KhXp_9NpUbwAHIAtBVFnMLth3MRaBjbXxAVbIro7inLfPD0-eHKfXCFed3YC8HQAkariD4Wm4xFV6-ti"
+        "oQr5H3C9oxeQxKfH_ga8ov8-5vo0e6_nw"
+    )
     SHOPIER_WEBSITE_INDEX: str = "1"
     SHOPIER_MODULE_VERSION: str = "1.0.4"
 
     # Her plan x süre kombinasyonu için Shopier panelinde oluşturduğunuz
-    # sabit ürün linkleri (8 adet). Süre eklemek/çıkarmak isterseniz
-    # app/plan_limits.py'deki DURATIONS sözlüğünü de güncelleyin.
-    SHOPIER_STARTER_30_URL: str = ""
-    SHOPIER_STARTER_90_URL: str = ""
-    SHOPIER_STARTER_180_URL: str = ""
-    SHOPIER_STARTER_365_URL: str = ""
-    SHOPIER_PRO_30_URL: str = ""
-    SHOPIER_PRO_90_URL: str = ""
-    SHOPIER_PRO_180_URL: str = ""
-    SHOPIER_PRO_365_URL: str = ""
+    # sabit ürün linkleri (8 adet).
+    SHOPIER_STARTER_30_URL: str = "https://www.shopier.com/NewsLetters/49422718"
+    SHOPIER_STARTER_90_URL: str = "https://www.shopier.com/NewsLetters/49448401"
+    SHOPIER_STARTER_180_URL: str = "https://www.shopier.com/NewsLetters/49448736"
+    SHOPIER_STARTER_365_URL: str = "https://www.shopier.com/NewsLetters/49448741"
+    SHOPIER_PRO_30_URL: str = "https://www.shopier.com/NewsLetters/49422747"
+    SHOPIER_PRO_90_URL: str = "https://www.shopier.com/NewsLetters/49448405"
+    SHOPIER_PRO_180_URL: str = "https://www.shopier.com/NewsLetters/49448724"
+    SHOPIER_PRO_365_URL: str = "https://www.shopier.com/NewsLetters/49448730"
 
     RENEWAL_REMINDER_DAYS_BEFORE: int = 3
 

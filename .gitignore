@@ -23,8 +23,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# Secrets & Environment
-.env
+# Secrets & Environment (tutuluyor)
 
 # (data/haberbotu.db canlıya/Render'a taşınabilmesi için repoya dahil ediliyor)
 
