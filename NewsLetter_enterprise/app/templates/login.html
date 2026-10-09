@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Giriş - {{ brand_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap card-corp p-4">
+  <div class="text-center mb-3"><img src="/static/logo.svg" alt="{{ brand_name }}" height="40"></div>
+  <h4 class="mb-3 fw-bold">Giriş Yap</h4>
+  {% if request.query_params.get('account_deleted') %}<div class="alert alert-success py-2 small">Hesabınız kalıcı olarak silindi.</div>{% endif %}
+  {% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <div class="mb-3">
+      <label class="form-label">E-posta</label>
+      <input type="email" name="email" class="form-control" required autofocus>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Şifre</label>
+      <input type="password" name="password" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-dark w-100">Giriş yap</button>
+  </form>
+  <p class="text-center small text-secondary mt-3 mb-0">
+    Hesabınız yok mu? <a href="/signup">Ücretsiz deneyin</a>
+  </p>
+</div>
+{% endblock %}

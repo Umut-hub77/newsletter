@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Faturalandırma - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<style>
+  /* Tüm Kutular İçin Ortak Arka Plan (Mevcut Plan, API, Tehlikeli Bölge ve Planlar) */
+  .plan-wrapper, .card-corp {
+    background: rgba(16, 19, 22, 0.12) !important;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    transition: all 0.3s ease;
+  }
+  
+  .plan-wrapper {
+    border-radius: 16px;
+  }
+  
+  .plan-wrapper:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
+    border-color: rgba(13, 110, 253, 0.12);
+  }
+  
+  .duration-card {
+    background: rgba(13, 110, 253, 0.12);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .duration-card:hover {
+    background: rgb(26, 73, 135);
+    border-color: #0d6efd; /* Bootstrap Primary Rengi */
+    box-shadow: 0 8px 16px rgba(209, 215, 225, 0.91);
+    transform: translateY(-4px);
+  }
+  
+  .duration-card:hover .price-text {
+    color: #0d6efd !important;
+  }
+  
+  .duration-card:hover .btn-plan {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+  }
+  
+  .btn-plan {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+</style>
+
+{% if success %}<div class="alert alert-success rounded-3 shadow-sm">Ödeme alındı. Bildirim işlendiğinde planınız birkaç dakika içinde güncellenir.</div>{% endif %}
+{% if error == 'verify_email_first' %}<div class="alert alert-danger rounded-3 shadow-sm">Plan yükseltmeden önce e-posta adresinizi doğrulamanız gerekiyor.</div>{% endif %}
+{% if error == 'shopier_not_configured' %}<div class="alert alert-danger rounded-3 shadow-sm">Bu paket için ödeme linki henüz tanımlanmamış. Lütfen daha sonra tekrar deneyin.</div>{% endif %}
+
+<div class="row g-4">
+<!-- Sol Sütun: Mevcut Plan Özeti -->
+  <div class="col-md-4">
+    <div class="card-corp p-4 rounded-4 shadow-sm border-0 h-100">
+      <h6 class="text-uppercase text fw-bold mb-3" style="letter-spacing: 1px; font-size: 0.8rem;">Mevcut Planınız</h6>
+      <p class="display-6 fw-bold mb-2 text-white">{{ plan.label }}</p> <!-- text-dark silinip text-white yapıldı -->
+      <p class="small mb-3">
+        {% if org.subscription_status == 'trialing' %}<span class="badge bg-warning text-dark px-2 py-1 rounded-pill">Deneme süresi</span>
+        {% elif org.subscription_status == 'active' %}<span class="badge bg-success px-2 py-1 rounded-pill">Aktif</span>
+        {% elif org.subscription_status == 'expired' %}<span class="badge bg-danger px-2 py-1 rounded-pill">Süresi doldu</span>
+        {% else %}<span class="badge bg-secondary px-2 py-1 rounded-pill">{{ org.subscription_status }}</span>{% endif %}
+      </p>
+      
+      {% if org.subscription_expires_at and org.plan != 'free' %}
+      <!-- bg-white bg-opacity-50 silindi, yerine bg-transparent eklendi -->
+      <div class="p-3 bg-transparent rounded-3 border border-secondary border-opacity-25 mb-3">
+        <span class="d-block small text-secondary mb-1">Geçerlilik Tarihi</span>
+        <strong class="text-white">{{ org.subscription_expires_at.strftime('%d.%m.%Y') }}</strong>
+      </div>
+      {% endif %}
+
+      <!-- Bootstrap tablosunun arka planını ezmek için style eklendi -->
+      <table class="table table-borderless table-sm mb-4" style="--bs-table-bg: transparent; --bs-table-color: inherit;">
+        <tr class="border-bottom border-secondary border-opacity-25">
+          <td class="text-secondary py-2">Abone kullanımı</td>
+          <td class="text-end fw-bold py-2 text-white">{{ abone_sayisi }} / {{ plan.max_subscribers }}</td>
+        </tr>
+        <tr class="border-bottom border-secondary border-opacity-25">
+          <td class="text-secondary py-2">Kişisel zamanlama</td>
+          <td class="text-end fw-bold py-2 text-white">{{ 'Var' if plan.custom_schedule_allowed else 'Yok' }}</td>
+        </tr>
+      </table>
+      
+      <!-- alert-secondary silindi, onun yerine şeffaf bir çerçeve yapısı kuruldu -->
+      <div class="p-3 border border-secondary border-opacity-25 small mb-0 rounded-3 text-secondary bg-transparent">
+        <i class="bi bi-info-circle me-1"></i> Ödemeler Shopier üzerinden alınır. Hesabınız ödeme onayı sonrası aktifleştirilir.
+      </div>
+    </div>
+  </div>
+
+  <!-- Sağ Sütun: Plan Seçenekleri -->
+  <div class="col-md-8">
+    {% for key, p in plans.items() %}
+    {% if key != 'free' %}
+    <div class="plan-wrapper p-4 mb-4 shadow-sm">
+      {% set active_plan = plan_overrides[key] %}
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+        <div>
+          <h5 class="fw-bold mb-1 text fs-4">{{ p.label }}</h5>
+          <p class="small text-secondary mb-2">{{ p.description }}</p>
+          <div class="text-secondary small">
+            <span class="fw-medium text">{{ active_plan.max_subscribers }}</span> abone
+            {% if active_plan.custom_schedule_allowed %}<span class="mx-1">&bull;</span> Kişisel zamanlama{% endif %}
+          </div>
+        </div>
+        {% if key == org.plan %}
+          <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 rounded-pill">Kullandığınız Plan</span>
+        {% endif %}
+      </div>
+
+      <div class="row g-3">
+        {% for dkey, d in durations.items() %}
+        <div class="col-6 col-lg-3">
+          <div class="duration-card p-3 text-center h-100 d-flex flex-column justify-content-between">
+            <div class="mb-3">
+              <span class="badge bg-secondary bg-opacity-10 text-secondary mb-2 rounded-pill px-3 py-1">{{ d.label }}</span>
+              <div class="fw-bolder fs-3 price-text text">
+                {{ '%.2f'|format(fiyat_tablosu[key][dkey]) }}<span class="fs-6 text fw-normal ms-1">₺</span>
+              </div>
+            </div>
+            <div class="text-start small text-secondary mb-3">
+              {% if active_plan.ai_subject_suggestions %}<span class="badge bg-info bg-opacity-10 text-info me-1 mb-1">AI Konu Önerisi</span>{% endif %}
+              {% if active_plan.scheduled_reports %}<span class="badge bg-success bg-opacity-10 text-success me-1 mb-1">Zamanlı Rapor</span>{% endif %}
+              {% if active_plan.subscriber_segmentation %}<span class="badge bg-primary bg-opacity-10 text-primary me-1 mb-1">Abone Segmentasyonu</span>{% endif %}
+              {% if active_plan.send_time_insights %}<span class="badge bg-warning bg-opacity-10 text-warning me-1 mb-1">Zamanlama Önerisi</span>{% endif %}
+              {% if active_plan.behavior_scores %}<span class="badge bg-secondary bg-opacity-10 text-secondary me-1 mb-1">Davranış Skoru</span>{% endif %}
+            </div>
+            <form method="post" action="/panel/billing/checkout/{{ key }}/{{ dkey }}">
+              <button class="btn btn-outline-primary w-100 fw-bold btn-plan py-2">
+                {% if key == org.plan and org.subscription_status == 'active' and d.days == org.current_duration_days %}
+                  Şimdi Yenile
+                {% else %}
+                  Seç
+                {% endif %}
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-3 small text-secondary">
+        <strong>Öne çıkanlar:</strong>
+        <ul class="mb-0 ps-3">
+          {% for feature in active_plan.features %}
+          <li>{{ feature }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Ekstra Alanlar (API ve Tehlikeli Bölge) -->
+    <div class="row g-3 mt-2">
+      <div class="col-md-6">
+        <div class="card-corp p-4 h-100 rounded-4 border-0 shadow-sm">
+          <h6 class="fw-bold mb-2">API Anahtarınız</h6>
+          <p class="small text-secondary mb-3">Entegrasyonlarda <code>X-API-Key</code> header'ı olarak kullanın.</p>
+          <div class="bg-light p-2 rounded border text-break">
+            <code class="small text-dark fw-bold">{{ org.api_key }}</code>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="card-corp p-4 h-100 rounded-4 border border-danger border-opacity-25 shadow-sm">
+          <h6 class="fw-bold mb-2 text-danger">Tehlikeli Bölge</h6>
+          <p class="small text-secondary mb-3">Hesabınızı ve tüm verilerinizi kalıcı olarak sistemden silin.</p>
+          <a href="/panel/delete-account" class="btn btn-outline-danger fw-bold rounded-3">Hesabımı Kalıcı Olarak Sil</a>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

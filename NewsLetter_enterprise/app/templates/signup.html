@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Ücretsiz Deneyin - {{ brand_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap card-corp p-4" style="max-width:440px">
+  <div class="text-center mb-3"><img src="/static/logo.svg" alt="{{ brand_name }}" height="40"></div>
+  <h4 class="mb-1 fw-bold">Hesap Oluştur</h4>
+  <p class="text-secondary small mb-3">14 gün ücretsiz deneme, kredi kartı gerekmez.</p>
+  {% if error %}<div class="alert alert-danger py-2">{{ error }}</div>{% endif %}
+  <form method="post" action="/signup">
+    <div class="mb-3">
+      <label class="form-label d-block">Hesap Türü</label>
+      <div class="btn-group w-100" role="group">
+        <input type="radio" class="btn-check" name="account_type" id="tip_bireysel" value="individual" checked
+               onchange="document.getElementById('org_ad_label').textContent='Ad Soyad'; document.getElementById('organization_name').placeholder='Örn. Ahmet Yılmaz';">
+        <label class="btn btn-outline-dark btn-sm" for="tip_bireysel">Bireysel</label>
+
+        <input type="radio" class="btn-check" name="account_type" id="tip_sirket" value="company"
+               onchange="document.getElementById('org_ad_label').textContent='Şirket / Marka Adı'; document.getElementById('organization_name').placeholder='Örn. Acme A.Ş.';">
+        <label class="btn btn-outline-dark btn-sm" for="tip_sirket">Şirket / Kurumsal</label>
+      </div>
+      <div class="form-text">Bireysel: kendi haber bülteninizi kendiniz alırsınız. Şirket: birden fazla kişiye (ekip/abone listesi) gönderirsiniz.</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" id="org_ad_label">Ad Soyad</label>
+      <input type="text" id="organization_name" name="organization_name" class="form-control" required autofocus placeholder="Örn. Ahmet Yılmaz">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">E-posta</label>
+      <input type="email" name="email" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Sektörünüz</label>
+      <select name="sector_id" class="form-select">
+        <option value="">Seçiniz...</option>
+        {% for s in sektorler %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">Kategoriler sektörünüze göre gruplanarak gösterilir; istediğiniz kategoriyi yine de seçebilirsiniz.</div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Şifre</label>
+      <input type="password" name="password" class="form-control" minlength="8" required>
+      <div class="form-text">En az 8 karakter.</div>
+    </div>
+    <button type="submit" class="btn btn-dark w-100">Hesap Oluştur</button>
+  </form>
+  <p class="text-center small text-secondary mt-3 mb-0">
+    Zaten hesabınız var mı? <a href="/login">Giriş yapın</a>
+  </p>
+</div>
+{% endblock %}

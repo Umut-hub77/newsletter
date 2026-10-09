@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Analiz - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<h5 class="fw-bold mb-3">{{ 'Kişisel Kullanıcı Analizi' if template_type == 'individual' else 'Şirket Abone Analizi' }}</h5>
+<p class="text-secondary small mb-4">{{ 'Bireysel hesaplar için özel performans ve hedef önerileri.' if template_type == 'individual' else 'Abonelerinizin dağılımı, etkileşim ve bölgesel analizlerini buradan takip edin.' }}</p>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card-corp p-3 h-100">
+      <h6 class="fw-bold mb-3">Ana İçgörü</h6>
+      <p class="mb-2">{{ insight_data.focus_topic }}</p>
+      <p class="small text-secondary mb-0">{{ insight_data.recommendation }}</p>
+    </div>
+  </div>
+
+  {% if template_type == 'individual' %}
+  <div class="col-md-6">
+    <div class="row g-3 h-100">
+      <div class="col-6">
+        <div class="card-corp p-3 h-100 d-flex flex-column">
+          <div class="small text-secondary mb-2">Açılma Oranı</div>
+          <div class="fs-3 fw-bold">{{ insight_data.open_rate }}%</div>
+          <div class="small text-secondary mt-auto pt-3">Kişisel gönderimlerde performansı artırmak için bu oranı kullanın.</div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card-corp p-3 h-100 d-flex flex-column">
+          <div class="small text-secondary mb-2">Tıklama Oranı</div>
+          <div class="fs-3 fw-bold">{{ insight_data.click_rate }}%</div>
+          <div class="small text-secondary mt-auto pt-3">Bu oran, içerik başlıklarınızın ne kadar çekici olduğunu gösterir.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="col-md-6">
+    <div class="row g-3 h-100">
+      <div class="col-4">
+        <div class="card-corp p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="small text-secondary mb-2">Aktif Abone</div>
+          <div class="fs-3 fw-bold">{{ insight_data.active_subscribers }}</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="card-corp p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="small text-secondary mb-2">Pasif Abone</div>
+          <div class="fs-3 fw-bold">{{ insight_data.inactive_subscribers }}</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="card-corp p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="small text-secondary mb-2">Konum Bilgili Abone</div>
+          <div class="fs-3 fw-bold">{{ insight_data.region_count }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

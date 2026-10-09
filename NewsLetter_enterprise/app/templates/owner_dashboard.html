@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Sahip Paneli - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<style>
+  /* Kutu Arka Planı ve Çerçeve */
+  .card-corp {
+    background: rgba(16, 19, 22, 0.12) !important;
+    border: 1px solid rgba(13, 110, 253, 0.12) !important;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .card-corp:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
+    border-color: rgba(13, 110, 253, 0.12) !important;
+  }
+
+  /* 1. BOOTSTRAP TABLOSUNUN BEYAZLIĞINI KÖKTEN EZEN SINIF */
+  .table-transparent,
+  .table-transparent th, 
+  .table-transparent td, 
+  .table-transparent tr,
+  .table-transparent thead,
+  .table-transparent tbody {
+    background-color: transparent !important;
+    background: transparent !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-striped-bg: transparent !important;
+    --bs-table-hover-bg: transparent !important;
+    color: white !important;
+    box-shadow: none !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .table-transparent th {
+    color: rgba(255,255,255,0.7) !important;
+    font-weight: 500;
+  }
+
+  .table-transparent .text-secondary {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  /* 2. FORM KUTULARININ BEYAZLIĞINI KÖKTEN EZEN SINIF */
+  .dark-input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+  }
+  
+  .dark-input::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .dark-input:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  }
+  
+  .dark-input option {
+    background-color: #1a1d21 !important;
+    color: white !important;
+  }
+
+  /* 3. BUTON GÖRÜNÜRLÜKLERİ */
+  .btn-outline-dark-custom {
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    background-color: transparent !important;
+  }
+  
+  .btn-outline-dark-custom:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .btn-danger-transparent {
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.5) !important;
+    background-color: transparent !important;
+  }
+  
+  .btn-danger-transparent:hover {
+    background-color: rgba(255, 107, 107, 0.1) !important;
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h5 class="fw-bold mb-0 text-white">Sahip Paneli</h5>
+  <a href="/owner/sources" class="btn btn-outline-dark-custom btn-sm rounded-3 px-3 py-2">Kategori / Kaynak Yönetimi</a>
+</div>
+
+<div class="card-corp p-4 mb-4 shadow-sm">
+  <h6 class="fw-bold mb-3 text-white">Bekleyen Ödeme Kayıtları ({{ bekleyen_odemeler | length }})</h6>
+  <div class="p-3 border border-info border-opacity-25 small mb-4 rounded-3 text-info bg-info bg-opacity-10">
+    Shopier panelinizdeki sipariş listesinde/e-posta bildiriminde bir ödeme gördüğünüzde,
+    aşağıda alıcının e-postasıyla eşleşen organizasyonu bulup "Plan Ayarla"dan aktifleştirin.
+  </div>
+  
+  <div class="table-responsive">
+    <table class="table table-sm align-middle table-transparent mb-0">
+      <thead>
+        <tr>
+          <th class="pb-2">Sipariş No</th>
+          <th class="pb-2">Org #</th>
+          <th class="pb-2">Plan</th>
+          <th class="pb-2">Tutar</th>
+          <th class="pb-2">Tarih</th>
+          <th class="pb-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in bekleyen_odemeler %}
+        <tr>
+          <td class="small py-3">{{ s.platform_order_id }}</td>
+          <td class="py-3">{{ s.organization_id }}</td>
+          <td class="py-3">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 rounded-pill">{{ s.plan }}</span>
+          </td>
+          <td class="py-3 fw-medium">{{ '%.2f'|format(s.amount_try) }}₺</td>
+          <td class="small text-secondary py-3">{{ s.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+          <td class="text-end py-3">
+            <form method="post" action="/owner/payment-orders/{{ s.id }}/mark-done" class="m-0">
+              <button class="btn btn-sm btn-outline-dark-custom rounded-3">İşlendi olarak kapat</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      {% if bekleyen_odemeler | length == 0 %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-secondary small">Bekleyen ödeme kaydı bulunmuyor.</td>
+        </tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card-corp p-4 shadow-sm">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h6 class="fw-bold mb-0 text-white">Organizasyonlar</h6>
+    <form method="get" action="/owner" class="m-0">
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm dark-input rounded-3 py-2 px-3" style="width:250px" placeholder="E-postaya göre ara...">
+    </form>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="table table-sm align-middle table-transparent mb-0">
+      <thead>
+        <tr>
+          <th class="pb-2">Ad</th>
+          <th class="pb-2">Sahip E-posta</th>
+          <th class="pb-2">Plan</th>
+          <th class="pb-2">Durum</th>
+          <th class="pb-2">Geçerlilik</th>
+          <th class="pb-2">Plan Ayarla</th>
+          <th class="pb-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for org in organizasyonlar %}
+        <tr>
+          <td class="py-3">{{ org.name }}</td>
+          <td class="small text-secondary py-3">{{ org.owner_email }}</td>
+          <td class="py-3">
+            <span class="badge bg-secondary bg-opacity-10 text-white border border-secondary border-opacity-25 px-2 py-1 rounded-pill">{{ org.plan }}</span>
+          </td>
+          <td class="small py-3">
+            {% if org.subscription_status == 'active' %}
+              <span class="text-success">{{ org.subscription_status }}</span>
+            {% else %}
+              <span class="text-secondary">{{ org.subscription_status }}</span>
+            {% endif %}
+          </td>
+          <td class="small text-secondary py-3">{{ org.subscription_expires_at.strftime('%d.%m.%Y') if org.subscription_expires_at else '-' }}</td>
+          <td class="py-3">
+            <form method="post" action="/owner/organizations/{{ org.id }}/set-plan" class="d-flex gap-2 m-0">
+              <select name="plan" class="form-select form-select-sm dark-input rounded-3" style="width:110px">
+                {% for key in plans.keys() %}
+                <option value="{{ key }}" {% if key == org.plan %}selected{% endif %}>{{ key }}</option>
+                {% endfor %}
+              </select>
+              <select name="gun" class="form-select form-select-sm dark-input rounded-3" style="width:100px" title="Süre">
+                <option value="30">30 gün</option>
+                <option value="90">90 gün</option>
+                <option value="180">180 gün</option>
+                <option value="365">365 gün</option>
+              </select>
+              <button class="btn btn-sm btn-primary rounded-3 px-3">Ayarla</button>
+            </form>
+          </td>
+          <td class="text-end py-3">
+            <form method="post" action="/owner/organizations/{{ org.id }}/delete"
+                  onsubmit="return confirm('{{ org.name }} (' + '{{ org.owner_email }}' + ') hesabı ve TÜM verileri kalıcı olarak silinecek. Emin misiniz?');" class="m-0">
+              <button class="btn btn-sm btn-danger-transparent rounded-3">Sil</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

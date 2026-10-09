@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Zamanlama Önerisi - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<h5 class="fw-bold mb-3">Zamanlama Önerisi</h5>
+<p class="text-secondary small mb-4">Aboneleriniz için en iyi gönderim zamanını ve açılma davranışını burada görebilirsiniz.</p>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card-corp p-4 h-100">
+      <h6 class="fw-bold mb-2">En iyi saat</h6>
+      <div class="fs-2 fw-bold">{{ insight_data.best_hour }}:00</div>
+      <p class="small text-secondary mt-3">{{ insight_data.note }}</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card-corp p-4 h-100">
+      <h6 class="fw-bold mb-2">Önerilen pencere</h6>
+      <div class="fs-3 fw-bold">{{ insight_data.recommended_window }}</div>
+      <p class="small text-secondary mt-3">Açılma oranınızı %{{ insight_data.open_rate_delta }} artırma potansiyeli var.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

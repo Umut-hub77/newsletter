@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}E-posta Doğrulama - {{ brand_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap card-corp p-4 text-center">
+  {% if success %}
+    <h4 class="fw-bold mb-2">E-posta doğrulandı</h4>
+    <p class="text-secondary small mb-3">Hesabınız artık tam olarak aktif.</p>
+  {% else %}
+    <h4 class="fw-bold mb-2">Bağlantı geçersiz</h4>
+    <p class="text-secondary small mb-3">Bu doğrulama bağlantısı geçersiz ya da süresi dolmuş olabilir.</p>
+  {% endif %}
+  <a href="/panel" class="btn btn-dark btn-sm">Panele git</a>
+</div>
+{% endblock %}

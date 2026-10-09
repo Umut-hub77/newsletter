@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Aboneler - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<style>
+  /* Kutu Arka Planı ve Çerçeve (Ana Tema) */
+  .card-corp {
+    background: rgba(16, 19, 22, 0.12) !important;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .card-corp:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
+    border-color: rgba(13, 110, 253, 0.12);
+  }
+  
+  /* Form inputları için karanlık/şeffaf tasarıma uyumlu stil */
+  .custom-input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-input:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  }
+</style>
+
+<div class="row g-4">
+  <!-- Sol Sütun: Bülten Alıcıları Tablosu -->
+  <div class="col-md-7">
+    <div class="card-corp p-4 h-100 shadow-sm">
+      <h5 class="fw-bold mb-4 text-white">Bülten Alıcıları</h5>
+      
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: inherit;">
+          <thead>
+            <tr class="border-bottom border-secondary border-opacity-25">
+              <th class="text-secondary fw-medium pb-2">E-posta</th>
+              <th class="text-secondary fw-medium pb-2">Ad</th>
+              <th class="text-secondary fw-medium pb-2">Kategoriler</th>
+              <th class="text-secondary fw-medium pb-2">Durum</th>
+              <th class="pb-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for s in subscribers %}
+            <tr class="border-bottom border-secondary border-opacity-10">
+              <td class="text-white py-3">{{ s.email }}</td>
+              <td class="text-white py-3">{{ s.name or '-' }}</td>
+              <td class="small py-3">
+                <span class="text-white">
+                  {% if s.categories %}
+                    {{ s.categories | map(attribute='name') | join(', ') }}
+                  {% else %}
+                    <span class="text-secondary">Tümü</span>
+                  {% endif %}
+                </span>
+                {% if s.use_custom_schedule %}
+                  <!-- Modern Şeffaf Rozet (Kişisel Zamanlama) -->
+                  <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 ms-1 px-2 py-1 rounded-pill">Kişisel zamanlama</span>
+                {% endif %}
+              </td>
+              <td class="py-3">
+                {% if s.active %}
+                  <!-- Modern Şeffaf Rozet (Aktif) -->
+                  <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">Aktif</span>
+                {% else %}
+                  <!-- Modern Şeffaf Rozet (Pasif) -->
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1 rounded-pill">Pasif</span>
+                {% endif %}
+              </td>
+              <td class="text-end py-3 text-nowrap">
+                <a href="/panel/subscribers/{{ s.id }}" class="btn btn-sm btn-outline-primary rounded-3">Düzenle</a>
+                <form method="post" action="/panel/subscribers/{{ s.id }}/toggle" class="d-inline">
+                  <button class="btn btn-sm btn-outline-secondary rounded-3">{{ 'Pasifleştir' if s.active else 'Aktifleştir' }}</button>
+                </form>
+                <form method="post" action="/panel/subscribers/{{ s.id }}/delete" class="d-inline" onsubmit="return confirm('Silinsin mi?');">
+                  <button class="btn btn-sm btn-outline-danger rounded-3">Sil</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sağ Sütun: Yeni Abone Ekle Formu -->
+  <div class="col-md-5">
+    <div class="card-corp p-4 h-100 shadow-sm">
+      <h6 class="fw-bold mb-3 text-white">Yeni Abone Ekle</h6>
+      
+      <!-- Kullanım durumu için daha şık, çerçeveli bir kutu -->
+      <div class="p-3 border border-secondary border-opacity-25 small mb-4 rounded-3 text-secondary bg-transparent d-flex justify-content-between align-items-center">
+        <span>Kullanım Durumu</span>
+        <strong class="text-white">{{ subscribers | length }} / {{ plan.max_subscribers }}</strong>
+      </div>
+      
+      <form method="post" action="/panel/subscribers/add">
+        <div class="mb-3">
+          <label class="form-label small text-secondary">E-posta</label>
+          <input type="email" name="email" class="form-control form-control-sm custom-input rounded-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small text-secondary">Ad (opsiyonel)</label>
+          <input name="name" class="form-control form-control-sm custom-input rounded-3 py-2">
+        </div>
+        <button class="btn btn-primary btn-sm w-100 rounded-3 py-2 fw-bold">Ekle</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

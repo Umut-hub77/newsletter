@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Hesabı Sil - {{ brand_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap card-corp p-4" style="max-width:440px">
+  <h5 class="fw-bold mb-2 text-danger">Hesabı Kalıcı Olarak Sil</h5>
+  <p class="small text-secondary">
+    Bu işlem <strong>{{ org.name }}</strong> hesabını ve buna bağlı tüm verileri
+    (aboneler, ekip üyeleri, zamanlama ayarları, ödeme kayıtları) kalıcı olarak siler.
+    <strong>Bu işlem geri alınamaz.</strong>
+  </p>
+  {% if error == 'wrong_password' %}<div class="alert alert-danger py-2 small">Şifre hatalı.</div>{% endif %}
+  <form method="post" action="/panel/delete-account">
+    <div class="mb-3">
+      <label class="form-label small">Onaylamak için şifrenizi girin</label>
+      <input type="password" name="password" class="form-control" required autofocus>
+    </div>
+    <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Hesabınız ve tüm verileriniz kalıcı olarak silinecek. Emin misiniz?');">
+      Hesabımı Kalıcı Olarak Sil
+    </button>
+  </form>
+  <p class="text-center small text-secondary mt-3 mb-0">
+    <a href="/panel">Vazgeç, panele dön</a>
+  </p>
+</div>
+{% endblock %}

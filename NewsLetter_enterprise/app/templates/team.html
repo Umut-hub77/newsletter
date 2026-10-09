@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Ekip - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<style>
+  /* Kutu Arka Planı ve Çerçeve (Faturalandırma Sayfası ile Aynı) */
+  .card-corp {
+    background: rgba(16, 19, 22, 0.12) !important;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .card-corp:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
+    border-color: rgba(13, 110, 253, 0.12);
+  }
+  
+  /* Form inputları için karanlık/şeffaf tasarıma uyumlu stil */
+  .custom-input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-input:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  }
+</style>
+
+<div class="row g-4">
+  <!-- Sol Sütun: Panel Kullanıcıları -->
+  <div class="col-md-7">
+    <div class="card-corp p-4 h-100 shadow-sm">
+      <h5 class="fw-bold mb-4 text-white">Panel Kullanıcıları</h5>
+      <table class="table table-sm align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: inherit;">
+        <thead>
+          <tr class="border-bottom border-secondary border-opacity-25">
+            <th class="text-secondary fw-medium pb-2">E-posta</th>
+            <th class="text-secondary fw-medium pb-2">Durum</th>
+            <th class="pb-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for a in admins %}
+          <tr class="border-bottom border-secondary border-opacity-10">
+            <td class="text-white py-3">{{ a.email }}</td>
+            <td class="py-3">
+              {% if a.email_verified %}
+                <!-- Modern Şeffaf Rozet Tasarımı -->
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill">Doğrulanmış</span>
+              {% else %}
+                <!-- Modern Şeffaf Rozet Tasarımı -->
+                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1 rounded-pill">Bekliyor</span>
+              {% endif %}
+            </td>
+            <td class="text-end py-3">
+              {% if admins | length > 1 %}
+              <form method="post" action="/panel/team/{{ a.id }}/delete" class="d-inline" onsubmit="return confirm('Bu kullanıcı silinsin mi?');">
+                <button class="btn btn-sm btn-outline-danger rounded-3">Sil</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Sağ Sütun: Ekibe Üye Ekle -->
+  <div class="col-md-5">
+    <div class="card-corp p-4 h-100 shadow-sm">
+      <h6 class="fw-bold mb-4 text-white">Ekibe Üye Ekle</h6>
+      
+      {% if error %}
+      <div class="alert alert-danger py-2 small rounded-3 bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">
+        {{ error }}
+      </div>
+      {% endif %}
+      
+      <form method="post" action="/panel/team/add">
+        <div class="mb-3">
+          <label class="form-label small text-secondary">E-posta</label>
+          <input type="email" name="email" class="form-control form-control-sm custom-input rounded-3 py-2" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label small text-secondary">Şifre</label>
+          <input type="password" name="password" class="form-control form-control-sm custom-input rounded-3 py-2" minlength="8" required>
+        </div>
+        <button class="btn btn-primary btn-sm w-100 rounded-3 py-2 fw-bold">Ekle</button>
+      </form>
+      
+      <div class="p-3 border border-secondary border-opacity-25 small mt-4 mb-0 rounded-3 text-secondary bg-transparent">
+        <i class="bi bi-info-circle me-1"></i> Eklediğiniz kullanıcı bu organizasyona tam erişimle giriş yapabilir.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

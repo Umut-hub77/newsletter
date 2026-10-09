@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Kategorilerim - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<h5 class="fw-bold mb-1">Kategorilerim</h5>
+<p class="text-secondary small mb-3">Hangi kategorilerden haber almak istediğinizi seçin, isterseniz kendi gönderim saatinizi ayarlayın.</p>
+
+<div class="mb-4">
+  <button type="button" id="konum-btn" class="btn btn-outline-dark btn-sm">📍 Konumumu Kullan</button>
+  <div id="konum-sonuc" class="mt-2"></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="card-corp p-4">
+      <form method="post" action="/panel/my-categories/update" id="kategori-form">
+
+        <div class="mb-4">
+          <label class="form-label small fw-bold">İlgilendiğim Kategoriler</label>
+          <p class="small text-secondary">Hiçbir kategori seçmezseniz tüm kategorilerin haberlerini alırsınız.</p>
+
+          {% if org.sector_id %}
+            {% set kendi_kats = categories | selectattr('sector_id', 'equalto', org.sector_id) | list %}
+            {% if kendi_kats %}
+            <div class="small fw-bold mb-1">Sektörünüz</div>
+            <div class="d-flex flex-wrap gap-3 mb-3">
+              {% for c in kendi_kats %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="kategoriler" value="{{ c.id }}" id="kat_{{ c.id }}"
+                       {% if c.id in secili_kategori_idler %}checked{% endif %}>
+                <label class="form-check-label small" for="kat_{{ c.id }}">{{ c.name }}</label>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          {% endif %}
+
+          {% for s in sectors %}
+            {% if s.id != org.sector_id %}
+              {% set kats = categories | selectattr('sector_id', 'equalto', s.id) | list %}
+              {% if kats %}
+              <div class="small fw-bold text-secondary mb-1 mt-2">{{ s.name }}</div>
+              <div class="d-flex flex-wrap gap-3 mb-2">
+                {% for c in kats %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="kategoriler" value="{{ c.id }}" id="kat_{{ c.id }}"
+                         {% if c.id in secili_kategori_idler %}checked{% endif %}>
+                  <label class="form-check-label small" for="kat_{{ c.id }}">{{ c.name }}</label>
+                </div>
+                {% endfor %}
+              </div>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {% set genel_kats = categories | selectattr('sector_id', 'none') | list %}
+          {% if genel_kats %}
+          <div class="small fw-bold text-secondary mb-1 mt-2">Genel</div>
+          <div class="d-flex flex-wrap gap-3">
+            {% for c in genel_kats %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="kategoriler" value="{{ c.id }}" id="kat_{{ c.id }}"
+                     {% if c.id in secili_kategori_idler %}checked{% endif %}>
+              <label class="form-check-label small" for="kat_{{ c.id }}">{{ c.name }}</label>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <hr>
+
+        {% if plan.custom_schedule_allowed %}
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" name="kullan_ozel_zamanlama" id="ozel_zamanlama"
+                 {% if subscriber.use_custom_schedule %}checked{% endif %}
+                 onchange="document.getElementById('ozel_zamanlama_ayarlari').classList.toggle('d-none', !this.checked)">
+          <label class="form-check-label small fw-bold" for="ozel_zamanlama">Kendi gönderim saatimi kullan</label>
+          <p class="small text-secondary mb-0">Kapalıysa panelin genel Zamanlama sekmesindeki gün/saate tabi olursunuz.</p>
+        </div>
+        {% else %}
+        <div class="alert alert-warning small">Kişisel zamanlama Starter ve üzeri planlarda kullanılabilir. <a href="/panel/billing">Planınızı yükseltin</a>.</div>
+        {% endif %}
+
+        <div id="ozel_zamanlama_ayarlari" class="{% if not subscriber.use_custom_schedule %}d-none{% endif %} ps-1">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Gönderim Günleri</label>
+            <div class="d-flex flex-wrap gap-3">
+              {% for kod, isim in [('mon','Pazartesi'), ('tue','Salı'), ('wed','Çarşamba'), ('thu','Perşembe'), ('fri','Cuma'), ('sat','Cumartesi'), ('sun','Pazar')] %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="gunler" value="{{ kod }}" id="sgun_{{ kod }}"
+                       {% if kod in secili_gunler %}checked{% endif %}>
+                <label class="form-check-label small" for="sgun_{{ kod }}">{{ isim }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Gönderim Saati</label>
+            <input type="time" name="zaman" class="form-control" style="max-width:160px"
+                   value="{{ '%02d:%02d' % (subscriber.custom_hour, subscriber.custom_minute) if subscriber.custom_hour is not none else '08:00' }}">
+          </div>
+        </div>
+
+        <button class="btn btn-dark btn-sm mt-2">Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-corp p-4">
+      <h6 class="fw-bold mb-2">Hesabım</h6>
+      <p class="small text-secondary mb-1">E-posta: {{ subscriber.email }}</p>
+      <p class="small text-secondary">
+        Kişisel zamanlama {% if subscriber.use_custom_schedule %}açık{% else %}kapalı (genel zamanlamaya tabi){% endif %}.
+      </p>
+    </div>
+    {% if plan.location_insights %}
+    <div class="card-corp p-4 mt-3">
+      <h6 class="fw-bold mb-2">Konum Bazlı Haber</h6>
+      <p class="small text-secondary mb-2">Yakınınızdaki haberleri bulmak için konumunuzu kullanabilirsiniz.</p>
+    </div>
+    {% else %}
+    <div class="alert alert-secondary small mt-3">Konum bazlı içerik bu plan için kapalı. <a href="/panel/billing">Planınızı yükseltin</a>.</div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.getElementById('konum-btn').addEventListener('click', function () {
+  const sonucDiv = document.getElementById('konum-sonuc');
+  if (!navigator.geolocation) {
+    sonucDiv.innerHTML = '<div class="alert alert-warning small py-2">Tarayıcınız konum özelliğini desteklemiyor.</div>';
+    return;
+  }
+  sonucDiv.innerHTML = '<span class="small text-secondary">Konum alınıyor...</span>';
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    const form = new FormData();
+    form.append('lat', pos.coords.latitude);
+    form.append('lon', pos.coords.longitude);
+    fetch('/panel/my-categories/detect-location', { method: 'POST', body: form })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.city) {
+          sonucDiv.innerHTML = '<div class="alert alert-warning small py-2">Konumunuz belirlenemedi.</div>';
+          return;
+        }
+        if (data.matched.length === 0) {
+          sonucDiv.innerHTML = `<div class="alert alert-secondary small py-2">Konumunuz: <strong>${data.city}</strong> — bu şehre özel bir haber henüz yok.</div>`;
+          return;
+        }
+        let html = `<div class="alert alert-success small py-2">Konumunuz: <strong>${data.city}</strong>. Önerilen haberler: `;
+        data.matched.forEach(k => {
+          html += `<button type="button" class="btn btn-sm btn-outline-success ms-1 ekle-btn" data-id="${k.id}">${k.name} +</button>`;
+        });
+        html += '</div>';
+        sonucDiv.innerHTML = html;
+        sonucDiv.querySelectorAll('.ekle-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const cb = document.getElementById('kat_' + this.dataset.id);
+            if (cb) { cb.checked = true; }
+            this.disabled = true;
+            this.textContent = '✓ eklendi';
+          });
+        });
+      })
+      .catch(() => { sonucDiv.innerHTML = '<div class="alert alert-danger small py-2">Bir hata oluştu.</div>'; });
+  }, function () {
+    sonucDiv.innerHTML = '<div class="alert alert-warning small py-2">Konum izni verilmedi.</div>';
+  });
+});
+</script>
+{% endblock %}

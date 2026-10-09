@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Ödemeye Yönlendiriliyorsunuz - {{ brand_name }}{% endblock %}
+{% block content %}
+<div class="login-wrap card-corp p-4 text-center">
+  <h5 class="fw-bold mb-2">Shopier'e yönlendiriliyorsunuz</h5>
+  <p class="text-secondary small">Otomatik yönlenmezseniz aşağıdaki butona tıklayın.</p>
+  <form id="shopier-form" method="post" action="{{ shopier_url }}">
+    {% for key, value in form_alanlari.items() %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+    <button type="submit" class="btn btn-dark btn-sm">Ödeme sayfasına git</button>
+  </form>
+</div>
+<script>document.getElementById('shopier-form').submit();</script>
+{% endblock %}

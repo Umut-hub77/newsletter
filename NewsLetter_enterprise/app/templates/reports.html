@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Raporlar - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<h5 class="fw-bold mb-3">Raporlar</h5>
+<p class="text-secondary small mb-4">Gönderimlerinizin performansını bu rapor panelinde görüntüleyin.</p>
+
+{% if not plan.scheduled_reports %}
+<div class="alert alert-warning">Bu plan için rapor görünümleri kapalı. <a href="/panel/billing">Planını yükselt</a>.</div>
+{% else %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  <div class="col">
+    <div class="card-corp p-4 h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="small text-secondary">Açılma Oranı</div>
+        <div class="fs-2 fw-bold">{{ report_data.open_rate }}%</div>
+      </div>
+      <div class="text-secondary small mt-3">Abonelerinizin e-posta açma davranışını gösterir.</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card-corp p-4 h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="small text-secondary">Tıklama Oranı</div>
+        <div class="fs-2 fw-bold">{{ report_data.click_rate }}%</div>
+      </div>
+      <div class="text-secondary small mt-3">Hangi içeriklerinizin daha fazla tıklama çektiğini izleyin.</div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card-corp p-4 h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="small text-secondary">En Popüler Kategori</div>
+        <div class="fs-2 fw-bold">{{ report_data.top_category }}</div>
+      </div>
+      <div class="text-secondary small mt-3">Abonelerinizin hangi ilgi alanında daha fazla tepki verdiğini öğrenin.</div>
+    </div>
+  </div>
+</div>
+<div class="card-corp p-4 mt-4">
+  <h6 class="fw-bold">Haftalık Özet</h6>
+  <p class="small text-secondary">{{ report_data.schedule_status }}</p>
+  <p class="small text-secondary">Bültenlerinizin performansı her hafta güncellenir.</p>
+</div>
+{% endif %}
+
+{% endblock %}

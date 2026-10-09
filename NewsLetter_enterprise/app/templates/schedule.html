@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Zamanlama - {{ brand_name }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-6">
+    <div class="card-corp p-4">
+      <h5 class="fw-bold mb-3">Bülten Zamanlaması</h5>
+      <p class="text-secondary small">Bülten yalnızca seçtiğiniz günlerde ve belirlediğiniz saatte otomatik olarak gönderilir. Değişiklik kaydedildiği an devreye girer, sunucuyu yeniden başlatmaya gerek yoktur.</p>
+
+      <form method="post" action="/panel/schedule/update">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Gönderim Günleri</label>
+          <div class="d-flex flex-wrap gap-3">
+            {% for kod, isim in [('mon','Pazartesi'), ('tue','Salı'), ('wed','Çarşamba'), ('thu','Perşembe'), ('fri','Cuma'), ('sat','Cumartesi'), ('sun','Pazar')] %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="gunler" value="{{ kod }}" id="gun_{{ kod }}"
+                     {% if kod in secili_gunler %}checked{% endif %}>
+              <label class="form-check-label small" for="gun_{{ kod }}">{{ isim }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Gönderim Saati</label>
+          <input type="time" name="zaman" class="form-control" style="max-width:160px"
+                 value="{{ '%02d:%02d' % (schedule.hour, schedule.minute) }}" required>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" name="aktif" id="aktif" {% if schedule.enabled %}checked{% endif %}>
+          <label class="form-check-label small" for="aktif">Otomatik gönderim aktif</label>
+        </div>
+
+        <button class="btn btn-dark btn-sm">Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card-corp p-4">
+      <h6 class="fw-bold mb-2">Mevcut Ayar</h6>
+      <p class="small text-secondary mb-1">
+        Durum: {% if schedule.enabled %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Pasif</span>{% endif %}
+      </p>
+      <p class="small text-secondary mb-1">Saat: {{ '%02d:%02d' % (schedule.hour, schedule.minute) }} (Europe/Istanbul)</p>
+      <p class="small text-secondary">Günler: {{ schedule.days_of_week }}</p>
+      <p class="small text-secondary mt-3">Belirlediğiniz gün ve saat geldiğinde sistem önce RSS kaynaklarını tazeler, ardından güncel haberlerle bülteni gönderir. Ayrı bir periyodik toplama artık yoktur — "Şimdi Topla" butonuyla dilediğiniz an manuel olarak da tetikleyebilirsiniz.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Panel - {{ brand_name }}{% endblock %}
+{% block content %}
+
+{% if not email_verified %}
+<div class="alert alert-warning d-flex justify-content-between align-items-center">
+  <span class="small">E-posta adresiniz henüz doğrulanmadı.</span>
+  <form method="post" action="/resend-verification"><button class="btn btn-sm btn-dark">Doğrulama mailini tekrar gönder</button></form>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="stat-box"><div class="small text-secondary">Toplam Haber (havuzda)</div><div class="fs-3 fw-bold">{{ toplam_haber }}</div></div></div>
+  <div class="col-md-3"><div class="stat-box"><div class="small text-secondary">Kategori Sayısı</div><div class="fs-3 fw-bold">{{ toplam_kategori }}</div></div></div>
+  <div class="col-md-3"><div class="stat-box"><div class="small text-secondary">Aktif Abone</div><div class="fs-3 fw-bold">{{ toplam_abone }}</div></div></div>
+  <div class="col-md-3"><div class="stat-box">
+    <div class="small text-secondary">Son Bülten</div>
+    {% if son_gonderim %}
+      <div class="fs-6">{{ son_gonderim_yerel_saat.strftime('%d.%m.%Y %H:%M') }} - {{ 'Başarılı' if son_gonderim.success else 'Hata' }}</div>
+    {% else %}
+      <div class="fs-6">Henüz gönderilmedi</div>
+    {% endif %}
+  </div></div>
+</div>
+
+<div class="d-flex gap-2 mb-4">
+  <form method="post" action="/panel/send-now"><button class="btn btn-dark btn-sm">Bülteni Şimdi Gönder</button></form>
+</div>
+
+{% if plan.scheduled_reports or plan.subscriber_segmentation or plan.ai_subject_suggestions %}
+<div class="row g-3 mb-4">
+  {% if plan.scheduled_reports %}
+  <div class="col-md-4">
+    <div class="card-corp p-4 h-100 position-relative d-flex flex-column">
+      <div>
+        <div class="fw-bold mb-2">Raporlar</div>
+        <p class="small text-secondary mb-0">Gönderim performansınızı ve etkileşim oranlarınızı hızlıca görün.</p>
+      </div>
+      <a href="/panel/reports" class="stretched-link text-decoration-none text-white mt-auto fw-bold">Raporları Aç</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if plan.subscriber_segmentation %}
+  <div class="col-md-4">
+    <div class="card-corp p-4 h-100 position-relative d-flex flex-column">
+      <div>
+        <div class="fw-bold mb-2">Abone Segmentasyonu</div>
+        <p class="small text-secondary mb-0">Abonelerinizi segmentlere ayırarak daha hedefli gönderimler yapın.</p>
+      </div>
+      <a href="/panel/segments" class="stretched-link text-decoration-none text-white mt-auto fw-bold">Segmentlere Git</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if plan.ai_subject_suggestions %}
+  <div class="col-md-4">
+    <div class="card-corp p-4 h-100 position-relative d-flex flex-column">
+      <div>
+        <div class="fw-bold mb-2">AI Başlık Önerisi</div>
+        <p class="small text-secondary mb-0">Abonelere özel konu başlıkları ve metin önerileri alabilirsiniz.</p>
+      </div>
+      <a href="/panel/subscribers" class="stretched-link text-decoration-none text-white mt-auto fw-bold">Abonelere Git</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if plan.send_time_insights %}
+  <div class="col-md-4">
+    <div class="card-corp p-4 h-100 position-relative d-flex flex-column">
+      <div>
+        <div class="fw-bold mb-2">Zamanlama Önerisi</div>
+        <p class="small text-secondary mb-0">Abonelerinizin en iyi açma saatlerine göre gönderim zamanını optimize edin.</p>
+      </div>
+      <a href="/panel/send-time" class="stretched-link text-decoration-none text-white mt-auto fw-bold">Zamanlamayı Gör</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if plan.behavior_scores %}
+  <div class="col-md-4">
+    <div class="card-corp p-4 h-100 position-relative d-flex flex-column">
+      <div>
+        <div class="fw-bold mb-2">Abone Davranış Skoru</div>
+        <p class="small text-secondary mb-0">Her abonenizin etkileşim eğilimini puanlayın ve yüksek potansiyelli listeyi bulun.</p>
+      </div>
+      <a href="/panel/behavior-insights" class="stretched-link text-decoration-none text-white mt-auto fw-bold">Skorları İncele</a>
+    </div>
+  </div>
+  {% endif %}
+  {% if (org.account_type == 'individual' and plan.location_insights) or (org.account_type == 'company' and plan.subscriber_segmentation) %}
+  <div class="col-md-4">
+    <div class="card-corp p-4 h-100 position-relative d-flex flex-column">
+      <div>
+        <div class="fw-bold mb-2">{{ 'Kişisel Analiz' if org.account_type == 'individual' else 'Abone Analizi' }}</div>
+        <p class="small text-secondary mb-0">{{ 'Bireysel performans ve konum bazlı öneriler.' if org.account_type == 'individual' else 'Şirketinizdeki aboneleri inceleyin ve segment bazlı analizleri takip edin.' }}</p>
+      </div>
+      <a href="/panel/analysis" class="stretched-link text-decoration-none text-white mt-auto fw-bold">Analizi Aç</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+
+<div class="card-corp p-4">
+  <h5 class="fw-bold mb-3">Son 24 Saat - Ortak Haber Havuzu</h5>
+  <p class="small text-secondary">Bu kategoriler ve kaynaklar platform tarafından yönetilir. Abonelerinizin hangi kategorileri alacağını <a href="/panel/subscribers">Aboneler</a> sekmesinden ayarlayabilirsiniz.</p>
+  {% for kategori, haberler in kategorize.items() %}
+    {% if haberler %}
+      <div class="category-title mt-3 mb-2 border-bottom pb-1">{{ kategori }}</div>
+      <ul class="list-unstyled">
+        {% for h in haberler %}
+        <li class="py-1 border-bottom">
+          <a href="{{ h.link }}" target="_blank" class="news-link">{{ h.title }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endfor %}
+  {% if not kategorize.values() | select | list %}
+    <p class="text-secondary">Şu an havuzda gösterilecek güncel haber yok.</p>
+  {% endif %}
+</div>
+{% endblock %}

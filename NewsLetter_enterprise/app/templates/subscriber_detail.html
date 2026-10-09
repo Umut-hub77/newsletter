@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}{{ subscriber.email }} - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<a href="/panel/subscribers" class="small text-secondary">&larr; Abonelere dön</a>
+
+<div class="row g-4 mt-1">
+  <div class="col-md-8">
+    <div class="card-corp p-4">
+      <h5 class="fw-bold mb-1">{{ subscriber.email }}</h5>
+      <p class="text-secondary small mb-3">{{ subscriber.name or 'İsim belirtilmemiş' }}</p>
+
+      <div class="mb-4">
+        <label class="form-label small fw-bold">Bu abonenin şehri (opsiyonel)</label>
+        <div class="d-flex gap-2" style="max-width:360px">
+          <input type="text" id="sehir-input" class="form-control form-control-sm" value="{{ subscriber.detected_city or '' }}" placeholder="Örn. İstanbul">
+          <button type="button" id="sehir-btn" class="btn btn-outline-dark btn-sm">Öner</button>
+        </div>
+        <div id="konum-sonuc" class="mt-2"></div>
+      </div>
+
+      <form method="post" action="/panel/subscribers/{{ subscriber.id }}/update-preferences">
+
+        <div class="mb-4">
+          <label class="form-label small fw-bold">İlgilendiği Kategoriler</label>
+          <p class="small text-secondary">Hiçbir kategori seçilmezse tüm kategorilerin haberleri gönderilir.</p>
+          <div class="d-flex flex-wrap gap-3">
+            {% for c in categories %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="kategoriler" value="{{ c.id }}" id="kat_{{ c.id }}"
+                     {% if c.id in secili_kategori_idler %}checked{% endif %}>
+              <label class="form-check-label small" for="kat_{{ c.id }}">{{ c.name }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <hr>
+
+        {% if plan.custom_schedule_allowed %}
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" name="kullan_ozel_zamanlama" id="ozel_zamanlama"
+                 {% if subscriber.use_custom_schedule %}checked{% endif %}
+                 onchange="document.getElementById('ozel_zamanlama_ayarlari').classList.toggle('d-none', !this.checked)">
+          <label class="form-check-label small fw-bold" for="ozel_zamanlama">Bu abone için kişisel gönderim zamanlaması kullan</label>
+          <p class="small text-secondary mb-0">Kapalıysa panelin genel Zamanlama sekmesindeki gün/saate tabi olur.</p>
+        </div>
+        {% else %}
+        <div class="alert alert-warning small">Kişisel zamanlama Starter ve üzeri planlarda kullanılabilir. <a href="/panel/billing">Planınızı yükseltin</a>.</div>
+        {% endif %}
+
+        <div id="ozel_zamanlama_ayarlari" class="{% if not subscriber.use_custom_schedule %}d-none{% endif %} ps-1">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Gönderim Günleri</label>
+            <div class="d-flex flex-wrap gap-3">
+              {% for kod, isim in [('mon','Pazartesi'), ('tue','Salı'), ('wed','Çarşamba'), ('thu','Perşembe'), ('fri','Cuma'), ('sat','Cumartesi'), ('sun','Pazar')] %}
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="gunler" value="{{ kod }}" id="sgun_{{ kod }}"
+                       {% if kod in secili_gunler %}checked{% endif %}>
+                <label class="form-check-label small" for="sgun_{{ kod }}">{{ isim }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Gönderim Saati</label>
+            <input type="time" name="zaman" class="form-control" style="max-width:160px"
+                   value="{{ '%02d:%02d' % (subscriber.custom_hour, subscriber.custom_minute) if subscriber.custom_hour is not none else '08:00' }}">
+          </div>
+        </div>
+
+        <button class="btn btn-dark btn-sm mt-2">Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-corp p-4">
+      <h6 class="fw-bold mb-2">Durum</h6>
+      <p class="small text-secondary mb-1">
+        {% if subscriber.active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Pasif</span>{% endif %}
+      </p>
+      <p class="small text-secondary">
+        Kişisel zamanlama {% if subscriber.use_custom_schedule %}açık{% else %}kapalı (genel zamanlamaya tabi){% endif %}.
+      </p>
+    </div>
+    {% if plan.ai_subject_suggestions %}
+    <div class="card-corp p-4 mt-3">
+      <h6 class="fw-bold mb-2">AI İçerik Önerisi</h6>
+      <p class="small text-secondary mb-3">Abonenizin ilgi alanına özel başlık, giriş cümlesi ve kampanya fikri üretin.</p>
+      <button id="suggest-topic-btn" class="btn btn-outline-dark btn-sm">AI Önerisi Al</button>
+      <div id="subject-result" class="mt-3"></div>
+    </div>
+    {% else %}
+    <div class="alert alert-secondary small mt-3">AI destekli öneriler bu plan için kapalı. <a href="/panel/billing">Planınızı yükseltin</a>.</div>
+    {% endif %}
+
+    {% if plan.subscriber_segmentation %}
+    <div class="card-corp p-4 mt-3">
+      <h6 class="fw-bold mb-2">Abone Segmentasyonu</h6>
+      <p class="small text-secondary mb-3">Abonelerinizi anlamlı gruplar halinde düzenleyin ve içerikleri hedefleyin.</p>
+      <a href="/panel/segments" class="btn btn-dark btn-sm">Segmentlere Git</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.getElementById('sehir-btn').addEventListener('click', function () {
+  const sonucDiv = document.getElementById('konum-sonuc');
+  const sehir = document.getElementById('sehir-input').value.trim();
+  if (!sehir) { sonucDiv.innerHTML = '<div class="alert alert-warning small py-2">Önce bir şehir yazın.</div>'; return; }
+  const form = new FormData();
+  form.append('city', sehir);
+  fetch('/panel/subscribers/{{ subscriber.id }}/set-city', { method: 'POST', body: form })
+    .then(r => r.json())
+    .then(data => {
+      if (data.matched.length === 0) {
+        sonucDiv.innerHTML = `<div class="alert alert-secondary small py-2">${sehir} için henüz özel bir kategori yok.</div>`;
+        return;
+      }
+      let html = `<div class="alert alert-success small py-2">Önerilen kategoriler: `;
+      data.matched.forEach(k => {
+        html += `<button type="button" class="btn btn-sm btn-outline-success ms-1 ekle-btn" data-id="${k.id}">${k.name} +</button>`;
+      });
+      html += '</div>';
+      sonucDiv.innerHTML = html;
+      sonucDiv.querySelectorAll('.ekle-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const cb = document.getElementById('kat_' + this.dataset.id);
+          if (cb) { cb.checked = true; }
+          this.disabled = true;
+          this.textContent = '✓ eklendi';
+        });
+      });
+    })
+    .catch(() => { sonucDiv.innerHTML = '<div class="alert alert-danger small py-2">Bir hata oluştu.</div>'; });
+});
+
+const suggestButton = document.getElementById('suggest-topic-btn');
+if (suggestButton) {
+  suggestButton.addEventListener('click', function () {
+    const resultDiv = document.getElementById('subject-result');
+    resultDiv.innerHTML = '<div class="small text-secondary">AI önerisi hazırlanıyor…</div>';
+    fetch('/panel/subscribers/{{ subscriber.id }}/suggest-subject', { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          resultDiv.innerHTML = '<div class="alert alert-warning small py-2">' + data.error + '</div>';
+          return;
+        }
+        const items = data.suggestions.map(s => `<li><strong>${s.type}</strong>: ${s.text}</li>`).join('');
+        resultDiv.innerHTML = `<div class="small text-dark">AI tarafından üretilen öneriler:</div><ul class="small mt-2">${items}</ul>`;
+      })
+      .catch(() => { resultDiv.innerHTML = '<div class="alert alert-danger small py-2">Bir hata oluştu.</div>'; });
+  });
+}
+</script>
+{% endblock %}
