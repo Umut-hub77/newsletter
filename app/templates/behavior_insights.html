@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Davranış Skorları - {{ brand_name }}{% endblock %}
+{% block content %}
+
+<h5 class="fw-bold mb-3">Abone Davranış Skorları</h5>
+<p class="text-secondary small mb-4">Her abonenin etkileşimini ve potansiyel performansını puanlayın.</p>
+
+<div class="row g-4">
+  <div class="col-12">
+    <div class="card-corp p-4">
+      <div class="table-responsive">
+        <table class="table table-borderless table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>E-posta</th>
+              <th>Davranış Puanı</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for score in scores %}
+            <tr>
+              <td>{{ score.email }}</td>
+              <td class="fw-bold">{{ score.score }}</td>
+              <td><span class="badge bg-{{ 'success' if score.score >= 75 else 'warning' if score.score >= 50 else 'secondary' }}">{{ score.status }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
