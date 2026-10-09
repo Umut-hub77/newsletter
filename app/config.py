@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     # --- Uygulama / oturum ---
     SECRET_KEY: str = "CHANGE_ME_IN_PRODUCTION"
     APP_TIMEZONE: str = "Europe/Istanbul"
-    APP_BRAND_NAME: str = "Sefine IT"
-    APP_BASE_URL: str = "http://localhost:8000"
+    APP_BRAND_NAME: str = "NewsLetter"
+    APP_BASE_URL: str = "https://newsletter-phqk.onrender.com"
     TRIAL_DAYS: int = 14
 
     # --- Shopier (ödeme) ---
@@ -51,17 +51,27 @@ class Settings(BaseSettings):
     # --- Platform sahibi (siz) ---
     # Bu e-postayla giriş yapan kişi /owner panelini görebilir: tüm
     # organizasyonları listeler, Shopier'den gelen ödemeyi manuel onaylar.
-    PLATFORM_OWNER_EMAIL: str = ""
+    PLATFORM_OWNER_EMAIL: str = "celebiumut97@gmail.com"
 
-    # --- Outlook / Office 365 SMTP ---
-    # Kurumsal Outlook/Exchange Online için SMTP AUTH veya "app password"
-    # gerekebilir; bilgi işlem ile teyit edin.
-    SMTP_HOST: str = "smtp.office365.com"
+    # --- SMTP (Gmail veya kurumsal sağlayıcı) ---
+    SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
-    MAIL_FROM: str = ""
-    MAIL_FROM_NAME: str = "Sefine IT"
+    SMTP_USER: str = "newslettermedias@gmail.com"
+    SMTP_PASSWORD: str = "qxkulcucjpjmclob"
+    MAIL_FROM: str = "newslettermedias@gmail.com"
+    MAIL_FROM_NAME: str = "NewsLetter"
+
+    @property
+    def clean_smtp_password(self) -> str:
+        return (self.SMTP_PASSWORD or "").strip(' "\'')
+
+    @property
+    def clean_smtp_user(self) -> str:
+        return (self.SMTP_USER or "").strip(' "\'')
+
+    @property
+    def clean_mail_from(self) -> str:
+        return (self.MAIL_FROM or self.clean_smtp_user).strip(' "\'')
 
     # --- Bülten içeriği ---
     # Kaynak/kategori artık organizasyon değil, PLATFORM GENELİ (siz

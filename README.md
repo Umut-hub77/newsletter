@@ -38,7 +38,7 @@ cp .env.example .env
 # .env dosyasını doldurun: SECRET_KEY, SMTP_*, SHOPIER_* alanları
 ```
 
-### Mevcut Sefine IT verisi olan kurulumlar için (ÖNEMLİ)
+### Mevcut verisi olan kurulumlar için (ÖNEMLİ)
 
 Daha önce tek-kiracılı sürümü kullandıysanız, uygulamayı yeniden
 başlatmadan önce **mutlaka** şu migrasyonu çalıştırın (verinizi yeni

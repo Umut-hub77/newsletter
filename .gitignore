@@ -26,10 +26,7 @@ wheels/
 # Secrets & Environment
 .env
 
-# Database & Uploads
-data/*.db
-data/*.sqlite
-data/*.sqlite3
+# (data/haberbotu.db canlıya/Render'a taşınabilmesi için repoya dahil ediliyor)
 
 # IDE & Editor
 .vscode/

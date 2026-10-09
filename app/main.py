@@ -18,10 +18,11 @@ from app.scheduler import start_scheduler
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("main")
 
+from app.templates_env import templates
+
 app = FastAPI(title=settings.APP_BRAND_NAME)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
 
 app.include_router(auth_routes.router)
 app.include_router(panel.router)

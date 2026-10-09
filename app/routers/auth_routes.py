@@ -28,13 +28,46 @@ def _slug_uret(ad: str, db: Session) -> str:
     return slug
 
 
-def _dogrulama_maili_gonder(admin: AdminUser):
-    link = f"{settings.APP_BASE_URL}/verify-email?token={admin.email_verification_token}"
+def _dogrulama_maili_gonder(admin: AdminUser, request: Request | None = None):
+    if request:
+        proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+        host = request.headers.get("x-forwarded-host", request.url.netloc)
+        base = f"{proto}://{host}".rstrip("/")
+    else:
+        base = settings.APP_BASE_URL.rstrip("/")
+    link = f"{base}/verify-email?token={admin.email_verification_token}"
+    subject = f"{settings.APP_BRAND_NAME} - E-posta adresinizi doğrulayın"
+    body_text = (
+        f"Merhaba,\n\n"
+        f"{settings.APP_BRAND_NAME} hesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın:\n{link}\n\n"
+        f"Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz."
+    )
+    body_html = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #1e293b; margin-top: 0;">Hoş Geldiniz!</h2>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+            <strong>{settings.APP_BRAND_NAME}</strong> hesabınızı aktif hale getirmek için lütfen aşağıdaki butona tıklayarak e-posta adresinizi doğrulayın:
+        </p>
+        <div style="margin: 30px 0; text-align: center;">
+            <a href="{link}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                E-postamı Doğrula
+            </a>
+        </div>
+        <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
+            Butona tıklayamıyorsanız bu bağlantıyı tarayıcınıza kopyalayabilirsiniz:<br>
+            <a href="{link}" style="color: #2563eb; word-break: break-all;">{link}</a>
+        </p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+            Bu hesabı siz oluşturmadıysanız bu e-postayı dikkate almayınız.
+        </p>
+    </div>
+    """
     sonuc = send_simple_email(
         admin.email,
-        f"{settings.APP_BRAND_NAME} - E-posta adresinizi doğrulayın",
-        f"Merhaba,\n\nHesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın:\n{link}\n\n"
-        f"Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.",
+        subject,
+        body_text,
+        body_html=body_html,
     )
     logger.info("Doğrulama maili gönderim sonucu (%s): %s", admin.email, sonuc)
     return sonuc
@@ -112,12 +145,13 @@ def signup_submit(
     db.commit()
     db.refresh(org)
 
+    is_owner = bool(settings.PLATFORM_OWNER_EMAIL and email == settings.PLATFORM_OWNER_EMAIL.strip().lower())
     admin = AdminUser(
         organization_id=org.id,
         email=email,
         password_hash=hash_password(password),
-        email_verified=False,
-        email_verification_token=secrets.token_urlsafe(32),
+        email_verified=is_owner,
+        email_verification_token=None if is_owner else secrets.token_urlsafe(32),
     )
     db.add(admin)
     db.commit()
@@ -129,7 +163,8 @@ def signup_submit(
         db.add(Subscriber(organization_id=org.id, email=email, name=organization_name.strip(), active=True))
         db.commit()
 
-    _dogrulama_maili_gonder(admin)
+    if not is_owner:
+        _dogrulama_maili_gonder(admin, request)
 
     schedule = get_or_create_schedule(db, org.id)
     reschedule_newsletter_job(schedule)
@@ -159,5 +194,5 @@ def resend_verification(request: Request, db: Session = Depends(get_db)):
     if admin and not admin.email_verified:
         admin.email_verification_token = secrets.token_urlsafe(32)
         db.commit()
-        _dogrulama_maili_gonder(admin)
+        _dogrulama_maili_gonder(admin, request)
     return RedirectResponse(url="/panel?verification_sent=1", status_code=302)

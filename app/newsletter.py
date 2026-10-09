@@ -428,7 +428,7 @@ def _mesaj_olustur(kategorize_haberler: dict, alici_email: str, marka_adi: str,
                     theme: str, accent: str, location_name: str | None = None) -> MIMEMultipart:
     msg = MIMEMultipart("alternative")
     msg["Subject"] = f"{marka_adi} - {datetime.now().strftime('%d.%m.%Y')}"
-    msg["From"] = settings.MAIL_FROM
+    msg["From"] = f"{marka_adi} <{settings.clean_mail_from}>"
     msg["To"] = alici_email
     msg["Date"] = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid()
@@ -444,7 +444,11 @@ def send_newsletter(db: Session, organization_id: int, dry_run: bool = False,
     sadece o abonelere gönderilir. Her abone kendi kategorileriyle
     kişiselleştirilmiş bir e-posta alır.
     """
-    if not settings.SMTP_USER or not settings.SMTP_PASSWORD or not settings.MAIL_FROM:
+    smtp_user = settings.clean_smtp_user
+    smtp_password = settings.clean_smtp_password
+    mail_from = settings.clean_mail_from
+
+    if not smtp_user or not smtp_password or not mail_from:
         logger.error("SMTP_USER / SMTP_PASSWORD / MAIL_FROM ayarlanmamış (.env)")
         return False
 
@@ -472,10 +476,14 @@ def send_newsletter(db: Session, organization_id: int, dry_run: bool = False,
     try:
         server = None
         if not dry_run:
-            server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=20)
-            server.ehlo()
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            if settings.SMTP_PORT == 465:
+                server = smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, timeout=25)
+            else:
+                server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=25)
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+            server.login(smtp_user, smtp_password)
 
         for abone in aboneler:
             kategori_idler = [k.id for k in abone.categories] or None

@@ -1,5 +1,5 @@
 """
-TEK SEFERLİK migrasyon: mevcut tek-kiracılı (Sefine IT) veritabanını yeni
+TEK SEFERLİK migrasyon: mevcut tek-kiracılı (NewsLetter) veritabanını yeni
 çok-kiracılı (multi-tenant/SaaS) şemaya taşır. Mevcut haberleriniz,
 kaynaklarınız ve abone listeniz KORUNUR.
 
@@ -73,7 +73,7 @@ def main():
     cur.execute("""
         INSERT INTO organizations
         (id, name, slug, brand_name, owner_email, created_at, plan, subscription_status, trial_ends_at, api_key)
-        VALUES (1, 'Sefine IT', 'sefine-it', 'Sefine IT', ?, ?, 'pro', 'active', ?, ?)
+        VALUES (1, 'NewsLetter', 'newsletter', 'NewsLetter', ?, ?, 'pro', 'active', ?, ?)
     """, (owner_email, simdi, uzak_gelecek, api_key))
 
     for tablo in ["categories", "sources", "news_items", "subscribers", "newsletter_logs", "admin_users"]:
